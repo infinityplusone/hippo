@@ -1,0 +1,22 @@
+{
+  "name": "hippo",
+  "version": "0.5.0",
+  "title": "Hippo(campus)",
+  "description": "Hippo(campus) - Library to load and query data easily",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/infinityplusone/hippo.git"
+  },
+  "author": "Jonathan \"Yoni\" Knoll",
+  "license": "MIT",
+  "main": "Hippo",
+  "files": [
+    "tasks/find-tables.js",
+    "hippo.js"
+  ],
+  "devDependencies": {
+    "colors": "^1.1.2",
+    "grunt": "~0.4.5",
+    "grunt-contrib-requirejs": "^1.0.0"
+  }
+}
