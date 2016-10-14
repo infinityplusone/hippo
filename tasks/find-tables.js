@@ -2,8 +2,8 @@
  * Provides find-tables to generate Grunt Task
  *
  * Author(s):  Jonathan "Yoni" Knoll
- * Version:    0.7.0
- * Date:       2016-09-29
+ * Version:    0.8.0
+ * Date:       2016-10-14
  *
  */
 
@@ -82,7 +82,7 @@ module.exports = function(grunt) {
           uri: f,
           name: _.capitalize(name),
           columns: getColumns(json),
-          source: src ? src : grunt.config('pkg').name
+          source: typeof src==='string' ? src : grunt.config('pkg').name
         };
       }
     } // processDataSource
