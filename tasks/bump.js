@@ -2,8 +2,8 @@
  * Provides bump.js as Grunt task
  *
  * Author(s):  Jonathan "Yoni" Knoll
- * Version:    0.8.0
- * Date:       2016-10-14
+ * Version:    0.9.0
+ * Date:       2016-10-17
  *
  */
 

@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.8.0
- * Date:       2016-10-14
+ * Version:    0.9.0
+ * Date:       2016-10-17
  *
  * Notes: 
  *
@@ -240,7 +240,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.8.0',
+    VERSION: '0.9.0',
 
     options: {
       localSchema: 'hippo-schema.json'
@@ -458,6 +458,11 @@ define([
           table.columns[key] = 'object';
           table.columns[k] = 'foreign-key';
         }
+        else if(Array.isArray(row[k]) && typeof Hippo.tables[k]!=='undefined') {
+          row[k].forEach(function(r, i) {
+            row[k][i] = Hippo.find(k, r);
+          });
+        }
       });
 
       return row;
@@ -608,8 +613,16 @@ define([
 
       var s = schema.id;
 
-      Hippo.tables[s] = _.create([]);
-      Hippo.tables[s].type = 'HippoTable';
+      if(Array.isArray(schema.dependencies)) {
+        schema.dependencies.forEach(function(d) {
+          Hippo.mount(Hippo.schema[d]);
+        });
+      }
+
+      if(!Hippo.tables[s]) {
+        Hippo.tables[s] = _.create([]);
+        Hippo.tables[s].type = 'HippoTable';
+      }
 
       if(!Array.isArray(schema.rows)) {
         throw new HippoError('Invalid rows for table `' + schema.name + '`!');
@@ -625,16 +638,9 @@ define([
         schema.columns.id = 'id';
       }
 
-      switch(typeof schema.callback) {
-        case 'function':
-          schema.callback.call(Hippo, schema); // this isn't going to work quite right if a new table depends on others
-          break;
-        default: // no callback, so we can just create the rows
-          schema.rows.forEach(function(r) {
-            Hippo.tables[s].push(Hippo.join(schema, r));
-          });
-          break;
-      }
+      schema.rows.forEach(function(r) {
+        Hippo.tables[s].push(Hippo.join(schema, r));
+      });
 
       Hippo.schema[s] = schema;
 

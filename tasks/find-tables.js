@@ -2,8 +2,8 @@
  * Provides find-tables to generate Grunt Task
  *
  * Author(s):  Jonathan "Yoni" Knoll
- * Version:    0.8.0
- * Date:       2016-10-14
+ * Version:    0.9.0
+ * Date:       2016-10-17
  *
  */
 
@@ -20,6 +20,7 @@ module.exports = function(grunt) {
     var dest = 'hippo-schema.json';
 
     var schema = {};
+    var tables = [];
 
     function getColumns(json) {
       var columns = {};
@@ -82,8 +83,10 @@ module.exports = function(grunt) {
           uri: f,
           name: _.capitalize(name),
           columns: getColumns(json),
+          dependencies: [],
           source: typeof src==='string' ? src : grunt.config('pkg').name
         };
+        tables.push(id);
       }
     } // processDataSource
 
@@ -91,7 +94,7 @@ module.exports = function(grunt) {
     // find data files within this project
     grunt.file.expand([
       './**/*.json',
-      '!./{bower,package,hippo-schema}.json',
+      '!./{bower,package,hippo-schema,common/shapes}.json',
       '!./{node_modules,bower_components,scripts,tasks,test,tmp}/**'
     ]).forEach(processDataSource);
 
@@ -107,6 +110,17 @@ module.exports = function(grunt) {
         }
       });
     }
+    
+    tables.forEach(function(t) {
+      Object.keys(schema[t].columns).forEach(function(c) {
+        if(schema[t].columns[c]==='array' && tables.indexOf(c)>=0) {
+          schema[t].dependencies.push(c);
+        }
+        else if(_.endsWith(c, '_id') && tables.indexOf(c.replace(/_id$/, 's'))>=0) {
+         schema[t].dependencies.push(c.replace(/_id$/, 's'));
+        }
+      });
+    });
 
     grunt.file.write(dest, JSON.stringify(schema, null, 2));
 
