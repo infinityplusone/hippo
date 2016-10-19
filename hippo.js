@@ -619,10 +619,8 @@ define([
         });
       }
 
-      if(!Hippo.tables[s]) {
-        Hippo.tables[s] = _.create([]);
-        Hippo.tables[s].type = 'HippoTable';
-      }
+      Hippo.tables[s] = _.create([]);
+      Hippo.tables[s].type = 'HippoTable';
 
       if(!Array.isArray(schema.rows)) {
         throw new HippoError('Invalid rows for table `' + schema.name + '`!');
@@ -866,7 +864,6 @@ define([
      *       It does *not* update the raw rows of data loaded from source files
      */
     update: function(t, row) {
-
       var table = Hippo.use(t);
       var oldRow = Hippo.find(t, row.id);
       var idx;
