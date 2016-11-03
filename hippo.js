@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.10.0
- * Date:       2016-10-19
+ * Version:    0.11.0
+ * Date:       2016-11-03
  *
  * Notes: 
  *
@@ -18,6 +18,7 @@ define([
   'lodash-inflection',
   'jquery-bindable',
   'json2/cycle',
+  'lz-string',
   'text'
 ], function($, _) {
 
@@ -240,7 +241,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.10.0',
+    VERSION: '0.11.0',
 
     options: {
       localSchema: 'hippo-schema.json'
@@ -546,7 +547,7 @@ define([
     loadFromLS: function() {
 
       Object.keys(localStorage).filter(function(key) { return _.startsWith(key, 'Hippo'); }).forEach(function(key) {
-        var storage = JSON.retrocycle(JSON.parse(localStorage.getItem(key)));
+        var storage = JSON.retrocycle(JSON.parse(LZString.decompress(localStorage.getItem(key))));
         if(storage) {
           if(Hippo.VERSION!==storage.VERSION) {
             console.warn(Hippo.prefix + '\'s version of Hippo (' + Hippo.VERSION + ') does not match the version of Hippo in localStorage (' + storage.VERSION + ').\nUpdating localStorage.');
@@ -747,7 +748,7 @@ define([
       });
 
       Object.keys(sources).forEach(function(s) {
-        localStorage.setItem('Hippo.' + s, JSON.stringify(JSON.decycle(sources[s])));
+        localStorage.setItem('Hippo.' + s, LZString.compress(JSON.stringify(JSON.decycle(sources[s]))));
       });
 
       Hippo.trigger('hippo:saved');

@@ -2,8 +2,8 @@
  * hippo Gruntfile
  *
  * Author(s):  Jonathan "Yoni" Knoll
- * Version:    0.10.0
- * Date:       2016-10-19
+ * Version:    0.11.0
+ * Date:       2016-11-03
  *
  */
 
@@ -27,6 +27,7 @@ module.exports = function(grunt) {
             'json2':                'bower_components/json2',
             'lodash':               'bower_components/lodash/dist/lodash.min',
             'lodash-inflection':    'bower_components/lodash-inflection/lib/lodash-inflection',
+            'lz-string':            'bower_components/lz-string/libs/lz-string.min',
             'text':                 'bower_components/requirejs-text/text' // this is needed because we *always* bring in templates or JSON
           },
           shim: {
