@@ -2,8 +2,8 @@
  * Provides find-tables to generate Grunt Task
  *
  * Author(s):  Jonathan "Yoni" Knoll
- * Version:    0.11.1
- * Date:       2016-11-03
+ * Version:    0.12.0
+ * Date:       2016-11-04
  *
  */
 
@@ -14,6 +14,7 @@ module.exports = function(grunt) {
 
     var colors = require('colors');
     var _ = require('lodash');
+            _.mixin(require("lodash-inflection"));
     var path = require('path');
     var fs = require('fs');
 
@@ -21,6 +22,12 @@ module.exports = function(grunt) {
 
     var schema = {};
     var tables = [];
+
+    var excludePatterns = [
+      './**/*.json',
+      '!./{bower,package,hippo-schema,common/shapes}.json',
+      '!./{node_modules,bower_components,scripts,tasks,test,tmp}/**'
+    ];
 
     function getColumns(json) {
       var columns = {};
@@ -90,34 +97,30 @@ module.exports = function(grunt) {
       }
     } // processDataSource
 
-    
-    // find data files within this project
-    grunt.file.expand([
-      './**/*.json',
-      '!./{bower,package,hippo-schema,common/shapes}.json',
-      '!./{node_modules,bower_components,scripts,tasks,test,tmp}/**'
-    ]).forEach(processDataSource);
-
     // find data files in specified locations
     if(grunt.config('hippo') && grunt.config('hippo').src.length>0) {
-      grunt.config('hippo').src.forEach(function(source) {
-        var hippoData = path.normalize(source + '/hippo-data.json');
-        if(grunt.file.exists(hippoData)) {
-          var json = grunt.file.readJSON(hippoData);
-          json.files.forEach(function(f) {
-            processDataSource(path.normalize(source + '/' + f), json.source);
-          });
-        }
+      grunt.file.expand(['**/hippo-data.json']).forEach(function(dataSrc) {
+        excludePatterns.push('!./' + dataSrc);
+        var json = grunt.file.readJSON(dataSrc);
+        json.files.forEach(function(f) {
+          if(grunt.file.exists(f)) {
+            excludePatterns.push('!./' + f);
+            processDataSource(f, json.source);
+          }
+        });
       });
     }
-    
+
+    // find data files within this project
+    grunt.file.expand(excludePatterns).forEach(processDataSource);
+   
     tables.forEach(function(t) {
       Object.keys(schema[t].columns).forEach(function(c) {
         if(schema[t].columns[c]==='array' && tables.indexOf(c)>=0) {
           schema[t].dependencies.push(c);
         }
         else if(_.endsWith(c, '_id') && tables.indexOf(c.replace(/_id$/, 's'))>=0) {
-         schema[t].dependencies.push(c.replace(/_id$/, 's'));
+         schema[t].dependencies.push(_.pluralize(c.replace(/_id$/, '')));
         }
       });
     });

@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.11.1
- * Date:       2016-11-03
+ * Version:    0.12.0
+ * Date:       2016-11-04
  *
  * Notes: 
  *
@@ -241,7 +241,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.11.1',
+    VERSION: '0.12.0',
 
     options: {
       localSchema: 'hippo-schema.json'
