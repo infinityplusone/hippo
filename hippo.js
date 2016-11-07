@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.13.0
- * Date:       2016-11-04
+ * Version:    0.14.0
+ * Date:       2016-11-07
  *
  * Notes: 
  *
@@ -77,8 +77,11 @@ define([
 
     var reDate = /(^\d{1,4}[\.|\\/|-]\d{1,2}[\.|\\/|-]\d{1,4})(\s*(?:0?[1-9]:[0-5]|1(?=[012])\d:[0-5])\d\s*[ap]m)?$/;
 
-    if(k==='id' || _.endsWith(k, '_id')) {
+    if(k==='id') {
       return 'id';
+    }
+    else if(_.endsWith(k, '_id')) {
+      return 'foreign-key';
     }
     else {
       switch(typeof v) {
@@ -241,7 +244,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.13.0',
+    VERSION: '0.14.0',
 
     options: {
       localSchema: 'hippo-schema.json'
