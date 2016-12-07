@@ -25,7 +25,8 @@
     "requirejs": "^2.1.22",
     "requirejs-text": "^2.0.12",
     "json2": "*",
-    "lz-string": "^1.4.4"
+    "lz-string": "^1.4.4",
+    "emitter": "component/emitter#^1.2.1"
   },
   "ignore": [
     "node_modules",
