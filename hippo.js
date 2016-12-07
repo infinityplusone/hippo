@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.14.0
- * Date:       2016-11-07
+ * Version:    0.16.0
+ * Date:       2016-12-07
  *
  * Notes: 
  *
@@ -13,14 +13,13 @@
  */
 
 define([
-  'jquery',
   'lodash',
   'lodash-inflection',
-  'jquery-bindable',
+  'emitter',
   'json2/cycle',
   'lz-string',
   'text'
-], function($, _) {
+], function(_) {
 
 
   var SCHEMAS = {};
@@ -214,7 +213,7 @@ define([
 
     create: function(rows, options) { // this is a mess and needs to be cleaned up
       this.rows = Array.prototype.slice.call(rows);
-      var result = $.extend(Array.prototype.slice.call(this.rows), this, {
+      var result = _.extend(Array.prototype.slice.call(this.rows), this, {
         first: this.rows.slice(0)[0] || false,
         last: this.rows.slice(-1)[0] || false,
         options: options,
@@ -240,11 +239,11 @@ define([
 
 
   // Hippo object
-  var Hippo = $.bindable({
+  var Hippo = Emitter({
 
     NAME: 'hippo',
 
-    VERSION: '0.14.0',
+    VERSION: '0.16.0',
 
     options: {
       localSchema: 'hippo-schema.json'
@@ -408,7 +407,7 @@ define([
      */
     insert: function(t, row, autoIncrement) {
 
-      row = $.extend(true, {}, row); // prevent inheritance
+      row = _.extend(true, {}, row); // prevent inheritance
 
       var table = Hippo.use(t, true);
       var schema = Hippo.schema[t];
@@ -435,7 +434,7 @@ define([
  
       Hippo.tables[t].push(row);
  
-      Hippo.trigger('hippo:table-row-added', [table, row]);
+      Hippo.emit('hippo:table-row-added', table, row);
  
       return row;
 
@@ -515,7 +514,7 @@ define([
 
           // First, we add each table's raw rows to its schema, so we don't have to load it again later
           Array.prototype.slice.call(arguments).forEach(function(table, i) {
-            Hippo.schema[tables[i]].rows = $.parseJSON(table);
+            Hippo.schema[tables[i]].rows = JSON.parse(table);
           });
 
           // Next, we mount the rows onto core as a table. 
@@ -524,7 +523,7 @@ define([
           });
 
           // Now we're done, so we say so :)
-          Hippo.trigger('hippo:tables-loaded');
+          Hippo.emit('hippo:tables-loaded');
           
         });
       }
@@ -534,7 +533,7 @@ define([
             Hippo.mount(Hippo.schema[s]);
           });
         }
-        Hippo.trigger('hippo:tables-loaded');
+        Hippo.emit('hippo:tables-loaded');
       }
 
       return Hippo;
@@ -579,7 +578,7 @@ define([
     loadSchema: function(source) {
 
       requirejs(['text!' + source], function(json) {
-        var schema = $.parseJSON(json);
+        var schema = JSON.parse(json);
         Object.keys(schema).forEach(function(s) {
           Hippo.check(schema[s]);
         });
@@ -646,7 +645,7 @@ define([
 
       Hippo.schema[s] = schema;
 
-      Hippo.trigger('hippo:table-ready', Hippo.schema[s]);
+      Hippo.emit('hippo:table-ready', Hippo.schema[s]);
 
       return schema;
 
@@ -682,7 +681,7 @@ define([
         return result.indexOf(r)>=0;
       });
 
-      Hippo.trigger('hippo:table-rows-removed', [Hippo.tables[t], rows]);
+      Hippo.emit('hippo:table-rows-removed', Hippo.tables[t], rows);
 
       return Hippo.tables[t];
 
@@ -719,7 +718,7 @@ define([
 
       table = Hippo.tables[t];
 
-      Hippo.trigger('hippo:table-reverted', [table]);
+      Hippo.emit('hippo:table-reverted', table);
 
       return table;
 
@@ -729,7 +728,7 @@ define([
     /**
      * Saves Hippo's schema & tables to localStorage for future use
      */
-    save: function(e, args) {
+    save: function(args) {
 
       Hippo.DATE = new Date().toISOString();
 
@@ -754,7 +753,7 @@ define([
         localStorage.setItem('Hippo.' + s, LZString.compress(JSON.stringify(JSON.decycle(sources[s]))));
       });
 
-      Hippo.trigger('hippo:saved');
+      Hippo.emit('hippo:saved');
 
     }, // save
 
@@ -783,7 +782,7 @@ define([
         callback = null;
       }
 
-      options = $.extend({
+      options = _.extend({
         exactMatch: false,
         ignoreCase: true,
         first: false,
@@ -881,7 +880,7 @@ define([
 
       Hippo.tables[t][idx] = row;
 
-      Hippo.trigger('hippo:table-row-modified', [table, row]);
+      Hippo.emit('hippo:table-row-modified', table, row);
 
       return row;
 
@@ -917,6 +916,8 @@ define([
 
   }); // Hippo
 
+  // Emitter(Hippo);
+
 
   /**
    * Used primarily as a cleanup mechanism for Hippo before telling the outside world everything is copacetic
@@ -925,26 +926,33 @@ define([
 
     if(!Hippo.ready) {
       Hippo.ready = true;
-      Hippo.trigger('hippo:ready');
+      Hippo.emit('hippo:ready');
     }
     else {
-      Hippo.trigger('hippo:reready');
+      Hippo.emit('hippo:reready');
     }
 
   } // _onTablesLoaded
 
+  function _onRowModified(table, row) {
+    Hippo.emit('hippo:table-modified', table, row);
+  } // _onRowModified
+
 
   // bind some events
   Hippo
-    .on('hippo:table-ready', function(e, schema) {
+    .on('hippo:table-ready', function(schema) {
       schema.ready = true;
       schema.loaded = true;
     })
-    .on('hippo:table-row-added hippo:table-reverted hippo:table-row-modified hippo:table-rows-removed', function(e, table, row) {
-      Hippo.trigger('hippo:table-modified', [[table, row]]);
-    })
+    .on('hippo:table-row-added', _onRowModified)
+    .on('hippo:table-reverted', _onRowModified)
+    .on('hippo:table-row-modified', _onRowModified)
+    .on('hippo:table-rows-removed', _onRowModified)
     .on('hippo:tables-loaded', _onTablesLoaded)
-    .on('hippo:ready hippo:reready hippo:table-modified', Hippo.save);
+    .on('hippo:ready', Hippo.save)
+    .on('hippo:reready', Hippo.save)
+    .on('hippo:table-modified', Hippo.save);
 
   return Hippo;
 

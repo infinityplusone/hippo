@@ -2,8 +2,8 @@
  * hippo Gruntfile
  *
  * Author(s):  Jonathan "Yoni" Knoll
- * Version:    0.14.0
- * Date:       2016-11-07
+ * Version:    0.16.0
+ * Date:       2016-12-07
  *
  */
 
@@ -22,8 +22,7 @@ module.exports = function(grunt) {
           findNestedDependencies: true,
           paths: {
             // these come from bower
-            'jquery':               'bower_components/jquery/dist/jquery',
-            'jquery-bindable':      'bower_components/jquery-enable/dist/jquery.bindable',
+            'emitter':              'bower_components/emitter/index',
             'json2':                'bower_components/json2',
             'lodash':               'bower_components/lodash/dist/lodash.min',
             'lodash-inflection':    'bower_components/lodash-inflection/lib/lodash-inflection',
@@ -31,7 +30,6 @@ module.exports = function(grunt) {
             'text':                 'bower_components/requirejs-text/text' // this is needed because we *always* bring in templates or JSON
           },
           shim: {
-            'jquery-bindable':      { deps: [ 'jquery' ] },
             'lodash-inflection':    { deps: [ 'lodash' ] }
           },
           out: 'hippo.min.js'
