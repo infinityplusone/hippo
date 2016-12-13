@@ -2,7 +2,7 @@
  * hippo Gruntfile
  *
  * Author(s):  Jonathan "Yoni" Knoll
- * Version:    0.17.1
+ * Version:    0.17.2
  * Date:       2016-12-13
  *
  */
