@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.16.0
- * Date:       2016-12-07
+ * Version:    0.17.0
+ * Date:       2016-12-13
  *
  * Notes: 
  *
@@ -30,6 +30,7 @@ define([
     b: '000000000',
     t: '000000000000'
   };
+
 
   // Custom Errors
   function HippoError(message, data) {
@@ -113,14 +114,18 @@ define([
    * @return {*} The (deep) value 
    */
   function _getDeepValue(field, subject) {
+
     var f = field.split('.');
+
     while(f.length>0) {
       subject = subject[f.shift()];
       if(typeof subject==='undefined') {
         break;
       }
     }
+
     return subject;
+
   } // getDeepValue
 
 
@@ -243,10 +248,14 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.16.0',
+    VERSION: '0.17.0',
+
+    known: [],
 
     options: {
-      localSchema: 'hippo-schema.json'
+      compress: true,
+      localSchema: 'hippo-schema.json',
+      saveTables: false
     },
 
     ready: false,
@@ -272,7 +281,6 @@ define([
       }
 
     }, // check
-
 
 
     /**
@@ -363,6 +371,8 @@ define([
      * Initialize Hippo by loading all available tables 
      * @param options {Object} [optional]
      *    - source {String} URI of a JSON schema [required]
+     *    - saveTables {Boolean} Save tables to localStorage? [default=false]
+     *    - compress {Boolean} Compress Hippo's data in localStorage? [default=true]
      *
      * @return Hippo
      */
@@ -379,6 +389,12 @@ define([
         case 'object':
           if(options.source) {
             Hippo.options.localSchema = options.source;
+          }
+          if(typeof options.saveTables!=='undefined') {
+            Hippo.options.saveTables = options.saveTables;
+          }
+          if(typeof options.compress!=='undefined') {
+            Hippo.options.compress = options.compress;
           }
           break;
         default:
@@ -444,31 +460,33 @@ define([
     /**
      * Joins a table row to data from another table
      * @param table {Table} The table containing the row [required]
-     * @param row {Integer} The row number
+     * @param row {Object} A row from the table
      *
      * @return {Object} The joined row
      */
     join: function(table, row) {
 
-      var keys = Object.keys(row);
+      var tableRow = _.cloneDeep(row);
+      
+      var keys = Object.keys(tableRow);
 
       keys.forEach(function(k) {
         var key, otherTable;
         if(_.endsWith(k, '_id')) {
           key = k.slice(0, -3);
           otherTable = _.pluralize(key);
-          row[key] = Hippo.find(otherTable, {id: row[k]});
+          tableRow[key] = Hippo.find(otherTable, {id: tableRow[k]});
           table.columns[key] = 'object';
           table.columns[k] = 'foreign-key';
         }
-        else if(Array.isArray(row[k]) && typeof Hippo.tables[k]!=='undefined') {
-          row[k].forEach(function(r, i) {
-            row[k][i] = Hippo.find(k, r);
+        else if(Array.isArray(tableRow[k]) && typeof Hippo.tables[k]!=='undefined') {
+          tableRow[k].forEach(function(r, i) {
+            tableRow[k][i] = Hippo.find(k, r);
           });
         }
       });
 
-      return row;
+      return tableRow;
 
     }, // join
 
@@ -548,6 +566,9 @@ define([
      */
     loadFromLS: function() {
 
+      // Normally, tables will not be saved to localStorage. Thus, it makes sense to mount them after the schemas have been fully loaded
+      var tablesToMount = [];
+
       Object.keys(localStorage).filter(function(key) { return _.startsWith(key, 'Hippo'); }).forEach(function(key) {
         var storage = JSON.retrocycle(JSON.parse(LZString.decompress(localStorage.getItem(key))));
         if(storage) {
@@ -559,13 +580,18 @@ define([
             Hippo.DATE = storage.DATE;
             Object.keys(storage.schema).forEach(function(s) {
               Hippo.schema[s] = storage.schema[s];
-              if(!!storage.tables[s]) {
+              if(storage.tables && !!storage.tables[s]) {
                 Hippo.tables[s] = Array.prototype.slice.call(storage.tables[s]);
+              }
+              else {
+                tablesToMount.push(Hippo.schema[s]);
               }
             });
           }
         }
       });
+
+      tablesToMount.forEach(Hippo.mount);
 
     }, // loadFromLS
 
@@ -616,9 +642,13 @@ define([
 
       var s = schema.id;
 
+      Hippo.known.push(s);
+
       if(Array.isArray(schema.dependencies)) {
         schema.dependencies.forEach(function(d) {
-          Hippo.mount(Hippo.schema[d]);
+          if(Hippo.known.indexOf(d)<=0) {
+            Hippo.mount(Hippo.schema[d]);
+          }
         });
       }
 
@@ -728,7 +758,7 @@ define([
     /**
      * Saves Hippo's schema & tables to localStorage for future use
      */
-    save: function(args) {
+    save: function() {
 
       Hippo.DATE = new Date().toISOString();
 
@@ -742,15 +772,27 @@ define([
             VERSION: Hippo.VERSION,
             DATE: Hippo.DATE,
             schema: {},
-            tables: {}
+            tables: Hippo.options.saveTables ? {} : false
           };
         }
-        sources[source].schema[s] = Hippo.schema[s];
-        sources[source].tables[s] = Hippo.tables[s];
+        sources[source].schema[s] = _.cloneDeep(Hippo.schema[s]);
+        if(Hippo.options.saveTables) {
+          sources[source].tables[s] = Hippo.tables[s];
+        }
+        else {
+          sources[source].schema[s].ready = false;
+          sources[source].schema[s].loaded = false;
+        }
+        
       });
 
       Object.keys(sources).forEach(function(s) {
-        localStorage.setItem('Hippo.' + s, LZString.compress(JSON.stringify(JSON.decycle(sources[s]))));
+        if(Hippo.options.compress) {
+          localStorage.setItem('Hippo.' + s, LZString.compress(JSON.stringify(JSON.decycle(sources[s]))));
+        }
+        else {
+          localStorage.setItem('Hippo.' + s, JSON.stringify(JSON.decycle(sources[s])));
+        }
       });
 
       Hippo.emit('hippo:saved');
@@ -771,6 +813,7 @@ define([
      *    - rows {Array} The results
      */
     search: function(table, lookup, callback, options) {
+
       var reFunc = /^([A-Za-z_]+)\(([a-zA-Z0-9_\-]+)\)([<>=]+)([A-Za-z0-9_\-]+)$/i;
       var rows = this.use(table);
       var result = {};
@@ -867,6 +910,7 @@ define([
      *       It does *not* update the raw rows of data loaded from source files
      */
     update: function(t, row) {
+
       var table = Hippo.use(t);
       var oldRow = Hippo.find(t, row.id);
       var idx;
@@ -874,6 +918,7 @@ define([
       if(!oldRow) {
         throw new LookupError('Unable to find row with `id`: `' + row.id + '`!');
       }
+
       idx = _.findIndex(table, oldRow);
       
       row = _.merge(oldRow, row);
@@ -916,7 +961,8 @@ define([
 
   }); // Hippo
 
-  // Emitter(Hippo);
+  // alias for emit so it plays nice with jQuery assumptions
+  Hippo.trigger = Hippo.emit;
 
 
   /**

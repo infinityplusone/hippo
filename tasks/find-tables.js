@@ -2,8 +2,8 @@
  * Provides find-tables to generate Grunt Task
  *
  * Author(s):  Jonathan "Yoni" Knoll
- * Version:    0.16.0
- * Date:       2016-12-07
+ * Version:    0.17.0
+ * Date:       2016-12-13
  *
  */
 
@@ -88,7 +88,7 @@ module.exports = function(grunt) {
           id: id,
           last_modified: fs.statSync(f).mtime,
           uri: f,
-          name: _.capitalize(name),
+          name: _.startCase(name),
           columns: getColumns(json),
           dependencies: [],
           source: typeof src==='string' ? src : grunt.config('pkg').name
