@@ -4,7 +4,7 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.17.0
+ * Version:    0.17.1
  * Date:       2016-12-13
  *
  * Notes: 
@@ -14,13 +14,13 @@
 
 define([
   'lodash',
-  'lodash-inflection',
   'emitter',
   'json2/cycle',
   'lz-string',
   'text'
 ], function(_) {
 
+  _.mixin(require('lodash-inflection'));
 
   var SCHEMAS = {};
 
@@ -248,7 +248,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.17.0',
+    VERSION: '0.17.1',
 
     known: [],
 
