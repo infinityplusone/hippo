@@ -266,6 +266,20 @@ define([
     tables: {},
 
 
+    __addShortcuts: function() {
+
+      // aliases for laziness
+      Hippo.d = Hippo.describe;
+      Hippo.f = Hippo.find;
+      Hippo.i = Hippo.insert;
+      Hippo.l = Hippo.list;
+      Hippo.r = Hippo.remove;
+      Hippo.s = Hippo.search;
+      Hippo.u = Hippo.update;
+
+    }, // __addShortcuts
+
+
     /**
      * Checks if a table needs to be loaded into Hippo
      * @param table {Object|String} A table or table id [required]
