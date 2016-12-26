@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.17.3
- * Date:       2016-12-13
+ * Version:    0.18.0
+ * Date:       2016-12-26
  *
  * Notes: 
  *
@@ -23,7 +23,7 @@ define([
 
   _.mixin(require('lodash-inflection'));
 
-  var SCHEMAS = {};
+  var __processed = {}; // used to ensure that cloned rows get reused instead of re-cloned
 
   var ABBREVIATIONS = {
     k: '000',
@@ -249,7 +249,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.17.3',
+    VERSION: '0.18.0',
 
     known: [],
 
@@ -481,9 +481,16 @@ define([
      */
     join: function(table, row) {
 
-      var tableRow = _.cloneDeep(row);
+      var tableRow, keys;
+
+      if(typeof __processed[table.id][row.id]!=='undefined') {
+        tableRow = __processed[table.id][row.id];
+      }
+      else {
+        tableRow = _.cloneDeep(row);
+      }
       
-      var keys = Object.keys(tableRow);
+      keys = Object.keys(tableRow);
 
       keys.forEach(function(k) {
         var key, otherTable;
@@ -500,6 +507,8 @@ define([
           });
         }
       });
+
+      __processed[table.id][tableRow.id] = tableRow;
 
       return tableRow;
 
@@ -623,8 +632,6 @@ define([
         Object.keys(schema).forEach(function(s) {
           Hippo.check(schema[s]);
         });
-        SCHEMAS[source] = schema;
-
         Hippo.loadFromFS();
       });
       
@@ -658,6 +665,10 @@ define([
       var s = schema.id;
 
       Hippo.known.push(s);
+
+      if(typeof __processed[s]==='undefined') {
+        __processed[s] = {};
+      }
 
       if(Array.isArray(schema.dependencies)) {
         schema.dependencies.forEach(function(d) {
