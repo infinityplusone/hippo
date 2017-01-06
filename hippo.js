@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.18.0
- * Date:       2016-12-26
+ * Version:    0.18.1
+ * Date:       2017-01-06
  *
  * Notes: 
  *
@@ -249,7 +249,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.18.0',
+    VERSION: '0.18.1',
 
     known: [],
 
@@ -438,7 +438,7 @@ define([
      */
     insert: function(t, row, autoIncrement) {
 
-      row = _.extend(true, {}, row); // prevent inheritance
+      row = _.extend({}, row); // prevent inheritance
 
       var table = Hippo.use(t, true);
       var schema = Hippo.schema[t];
