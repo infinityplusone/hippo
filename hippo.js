@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.18.1
- * Date:       2017-01-06
+ * Version:    0.19.0
+ * Date:       2017-02-10
  *
  * Notes: 
  *
@@ -23,7 +23,7 @@ define([
 
   _.mixin(require('lodash-inflection'));
 
-  var __processed = {}; // used to ensure that cloned rows get reused instead of re-cloned
+  window.__processed = {}; // used to ensure that cloned rows get reused instead of re-cloned
 
   var ABBREVIATIONS = {
     k: '000',
@@ -249,7 +249,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.18.1',
+    VERSION: '0.19.0',
 
     known: [],
 
@@ -498,8 +498,14 @@ define([
           key = k.slice(0, -3);
           otherTable = _.pluralize(key);
           tableRow[key] = Hippo.find(otherTable, {id: tableRow[k]});
-          table.columns[key] = 'object';
-          table.columns[k] = 'foreign-key';
+          if(tableRow[key]) {
+            table.columns[key] = 'object';
+            table.columns[k] = 'foreign-key';
+            if(typeof tableRow[key][table.id]==='undefined') {
+              tableRow[key][table.id] = [];
+            }
+            tableRow[key][table.id].push(tableRow);
+          }
         }
         else if(Array.isArray(tableRow[k]) && typeof Hippo.tables[k]!=='undefined') {
           tableRow[k].forEach(function(r, i) {
@@ -665,7 +671,7 @@ define([
       var s = schema.id;
 
       Hippo.known.push(s);
-
+      
       if(typeof __processed[s]==='undefined') {
         __processed[s] = {};
       }
