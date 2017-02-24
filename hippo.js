@@ -188,6 +188,7 @@ define([
         switchCase = ['function', field, value, typeof value];
         predicate = value;
         break;
+      case 'boolean':
       case 'object':
         if(Array.isArray(value)) {
           switchCase = ['array', field, value, typeof value];
@@ -196,8 +197,14 @@ define([
           });
         }
         else {
-          switchCase = ['object', field, value];
-          predicate = value;
+          if(value===true) {
+            switchCase = ['object', field, value, typeof value];
+            predicate = field;
+          }
+          else {
+            switchCase = ['object', field, value, typeof value];
+            predicate = value;
+          }
         }
         break;
       case 'number':
@@ -207,6 +214,9 @@ define([
       default:
         switchCase = ['default', field, value, typeof value];
         break;
+    }
+    if(!!options.debug) {
+      console.log(switchCase, predicate);
     }
 
     return [].concat(predicate);
@@ -846,13 +856,14 @@ define([
      */
     search: function(table, lookup, callback, options) {
 
+
       var reFunc = /^([A-Za-z_]+)\(([a-zA-Z0-9_\-]+)\)([<>=]+)([A-Za-z0-9_\-]+)$/i;
       var rows = this.use(table);
       var result = {};
       var predicate = lookup;
       var counts;
 
-      if(typeof callback==='object') {
+      if(callback && typeof callback==='object') {
         options = callback;
         callback = null;
       }
