@@ -1025,6 +1025,9 @@ define([
 
   function _onRowModified(table, row) {
     Hippo.emit('hippo:table-modified', table, row);
+    if(Hippo.options.saveTables) {
+      Hippo.save();
+    }
   } // _onRowModified
 
 
@@ -1040,8 +1043,7 @@ define([
     .on('hippo:table-rows-removed', _onRowModified)
     .on('hippo:tables-loaded', _onTablesLoaded)
     .on('hippo:ready', Hippo.save)
-    .on('hippo:reready', Hippo.save)
-    .on('hippo:table-modified', Hippo.save);
+    .on('hippo:reready', Hippo.save);
 
   return Hippo;
 
