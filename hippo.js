@@ -4,8 +4,8 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.19.1
- * Date:       2017-02-24
+ * Version:    0.20.1
+ * Date:       2017-03-16
  *
  * Notes: 
  *
@@ -259,7 +259,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.19.1',
+    VERSION: '0.20.1',
 
     known: [],
 
@@ -406,6 +406,8 @@ define([
       if(Hippo.ready) {
         throw new HippoError('Hippo has already been loaded!');
       }
+
+      Hippo.emit('hippo:starting');
 
       switch(typeof options) {
         case 'string':
@@ -645,6 +647,7 @@ define([
 
       requirejs(['text!' + source], function(json) {
         var schema = JSON.parse(json);
+        Hippo.emit('hippo:loading-schema', schema);
         Object.keys(schema).forEach(function(s) {
           Hippo.check(schema[s]);
         });
@@ -855,7 +858,6 @@ define([
      *    - rows {Array} The results
      */
     search: function(table, lookup, callback, options) {
-
 
       var reFunc = /^([A-Za-z_]+)\(([a-zA-Z0-9_\-]+)\)([<>=]+)([A-Za-z0-9_\-]+)$/i;
       var rows = this.use(table);

@@ -1,3 +1,3 @@
-# Hippo v0.20.0
+# Hippo v0.20.1
 
 #### Documentation

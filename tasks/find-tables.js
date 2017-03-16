@@ -2,8 +2,8 @@
  * Provides find-tables to generate Grunt Task
  *
  * Author(s):  Jonathan "Yoni" Knoll
- * Version:    0.20.0
- * Date:       2017-03-08
+ * Version:    0.20.1
+ * Date:       2017-03-16
  *
  */
 
