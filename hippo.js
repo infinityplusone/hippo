@@ -4,7 +4,7 @@
  * Dependencies: lodash, lodash-inflection, jquery, jquery-bindable, json2, text
  * 
  * Author(s):  infinityplusone
- * Version:    0.20.1
+ * Version:    0.20.2
  * Date:       2017-03-16
  *
  * Notes: 
@@ -259,7 +259,7 @@ define([
 
     NAME: 'hippo',
 
-    VERSION: '0.20.1',
+    VERSION: '0.20.2',
 
     known: [],
 
@@ -566,6 +566,8 @@ define([
       var tables = Object.keys(Hippo.schema).filter(function(t) { return !Hippo.schema[t].skip && !Hippo.schema[t].loaded; }),
           tablesToLoad = tables.filter(function(t) { return typeof Hippo.schema[t].rows==='undefined'; });
 
+      Hippo.emit('hippo:loading-tables', tables);
+
       // any new tables to load?
       if(tablesToLoad.length>0) {
 
@@ -632,6 +634,8 @@ define([
           }
         }
       });
+
+      Hippo.emit('hippo:loading-tables', tablesToMount.map(function(table) { return table.id; }));
 
       tablesToMount.forEach(Hippo.mount);
 
