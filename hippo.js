@@ -243,6 +243,10 @@ define([
       return Result.create(this.rows.slice(0, count), this.options);
     }, // limit
 
+    random: function(count) {
+      return _.sampleSize(this.rows, count);
+    }, // random
+
     sortBy: function(criteria) {
       return Result.create(_.sortBy(this.rows, criteria), this.options);
     }, // sortBy
